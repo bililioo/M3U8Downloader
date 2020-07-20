@@ -1,13 +1,15 @@
 package top.xuqingquan.m3u8downloader
 
 import android.os.Build
-import android.os.Environment
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.MutableLiveData
 import com.liulishuo.okdownload.OkDownload
 import top.xuqingquan.m3u8downloader.entity.*
 import top.xuqingquan.m3u8downloader.utils.md5
 import java.io.File
+import java.io.IOException
+import java.nio.file.Files
 import kotlin.concurrent.thread
 
 /**
@@ -49,6 +51,7 @@ object FileDownloader {
     private val downloadList = arrayListOf<VideoDownloadEntity>()//排队列表
     private val waitList = arrayListOf<VideoDownloadEntity>()//等待下载的队列
     private var wait = false//m3u8等待状态
+    private lateinit var basePath: File
 
     /**
      * 停止全部任务
@@ -97,11 +100,18 @@ object FileDownloader {
      */
     @JvmStatic
     fun getBaseDownloadPath(): File {
-        val file = File(Environment.getExternalStorageDirectory(), "m3u8Downloader")
-        if (!file.exists()) {
-            file.mkdirs()
-        }
-        return file
+        return basePath
+//        val file = File(Environment.getExternalStorageDirectory(), "m3u8Downloader")
+//        if (!file.exists()) {
+//            file.mkdirs()
+//        }
+//        return file
+    }
+
+    @JvmStatic
+    fun setBaseDownloadPath(file: File) {
+        Log.e("zzz", "file = " + file)
+        basePath = file
     }
 
     /**
@@ -109,7 +119,7 @@ object FileDownloader {
      */
     @JvmStatic
     fun getDownloadPath(url: String): File {
-        val file = File(getBaseDownloadPath(), md5(url))
+        val file = File(basePath, md5(url))
         if (!file.exists()) {
             file.mkdir()
         }
@@ -131,6 +141,18 @@ object FileDownloader {
     @JvmStatic
     fun getConfigFile(path: File): File {
         return File(path, "video.config")
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @JvmStatic
+    fun deleteDownload(originalURL: String): Boolean {
+        val file = File(basePath, md5(originalURL))
+        if (file.exists()) {
+            deleteAllFiles(file)
+            file.delete()
+            return true
+        }
+        return false
     }
 
     /**
@@ -235,6 +257,28 @@ object FileDownloader {
                 //有等待获取真实ts流的则继续回调
                 Log.d(TAG, "removeWaiting")
                 downloadM3U8File(waitList.removeAt(0))
+            }
+        }
+    }
+
+
+    private fun deleteAllFiles(root: File) {
+        val files = root.listFiles()
+        if (files != null) for (f in files) {
+            if (f.isDirectory) { // 判断是否为文件夹
+                deleteAllFiles(f)
+                try {
+                    f.delete()
+                } catch (e: Exception) {
+                }
+            } else {
+                if (f.exists()) { // 判断是否存在
+                    deleteAllFiles(f)
+                    try {
+                        f.delete()
+                    } catch (e: Exception) {
+                    }
+                }
             }
         }
     }

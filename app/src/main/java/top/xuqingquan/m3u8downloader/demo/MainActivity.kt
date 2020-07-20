@@ -1,12 +1,14 @@
 package top.xuqingquan.m3u8downloader.demo
 
 import android.Manifest
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Environment
+import android.util.Log
 import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.activity_main.*
@@ -30,7 +32,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         initListView()
+
+        FileDownloader.setBaseDownloadPath(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)!!)
+
         initListWithPermissionCheck()
+
         //接收进度通知
         FileDownloader.downloadCallback.observe(this, Observer {
             onProgress(it)
@@ -53,41 +59,41 @@ class MainActivity : AppCompatActivity() {
     )
     fun initList() {
         thread {//在线程中处理，防止ANR
-            FileDownloader.getBaseDownloadPath().listFiles().forEach {
-                val file = File(it, "video.config")
-                if (file.exists()) {
-                    val text = file.readText()
-                    if (text.isNotEmpty()) {
-                        val data = gson.fromJson<VideoDownloadEntity>(
-                            text,
-                            VideoDownloadEntity::class.java
-                        )
-                        if (data != null) {
-                            if (data.status == DELETE) {
-                                it.deleteRecursively()
-                            } else if (!tempList.contains(data.originalUrl)) {
-                                videoList.add(data)
-                                tempList.add(data.originalUrl)
+                FileDownloader.getBaseDownloadPath().listFiles().forEach {
+                    val file = File(it, "video.config")
+                    if (file.exists()) {
+                        val text = file.readText()
+                        if (text.isNotEmpty()) {
+                            val data = gson.fromJson<VideoDownloadEntity>(
+                                text,
+                                VideoDownloadEntity::class.java
+                            )
+                            if (data != null) {
+                                if (data.status == DELETE) {
+                                    it.deleteRecursively()
+                                } else if (!tempList.contains(data.originalUrl)) {
+                                    videoList.add(data)
+                                    tempList.add(data.originalUrl)
+                                }
                             }
                         }
                     }
                 }
-            }
-            runOnUiThread {
-                //主线程通知刷新布局
-                adapter.notifyDataSetChanged()
-            }
-            videoList.sort()
-            //依次添加下载队列
-            videoList.filter { it.status == DOWNLOADING }.forEach {
-                FileDownloader.downloadVideo(it)
-            }
-            videoList.filter { it.status == PREPARE }.forEach {
-                FileDownloader.downloadVideo(it)
-            }
-            videoList.filter { it.status == NO_START }.forEach {
-                FileDownloader.downloadVideo(it)
-            }
+                runOnUiThread {
+                    //主线程通知刷新布局
+                    adapter.notifyDataSetChanged()
+                }
+                videoList.sort()
+                //依次添加下载队列
+                videoList.filter { it.status == DOWNLOADING }.forEach {
+                    FileDownloader.downloadVideo(it)
+                }
+                videoList.filter { it.status == PREPARE }.forEach {
+                    FileDownloader.downloadVideo(it)
+                }
+                videoList.filter { it.status == NO_START }.forEach {
+                    FileDownloader.downloadVideo(it)
+                }
         }
     }
 
@@ -123,6 +129,13 @@ class MainActivity : AppCompatActivity() {
                 videoList[index].downloadTask = entity.downloadTask
                 videoList[index].startDownload = entity.startDownload
                 adapter.notifyItemChanged(index, 0)
+
+                Log.e("zzz", "entity.currentSpeed = " + entity.currentSpeed)
+                Log.e("zzz", "entity.tsSize = " + entity.tsSize)
+                Log.e("zzz", "entity.fileSize = " + entity.fileSize)
+                Log.e("zzz", "entity.currentProgress = " + entity.currentProgress)
+                Log.e("zzz", "entity.redirectUrl = " + entity.redirectUrl)
+
                 break
             }
         }
@@ -131,6 +144,9 @@ class MainActivity : AppCompatActivity() {
     private fun newDownload() {
         val editText = EditText(this)
         editText.setHint(R.string.please_input_download_address)
+//        editText.setText("http://alvideo.yojiang.cn/3f8baa6b5dbb4ac0860f00e57c5b7e25/76d2e7769080464fb613c3e332489ab6-4d9daec0959ae21a243d9c47c741e52d-hd.m3u8")
+//        editText.setText("https://alvideo.yojiang.cn/sv/4d77fda8-172c6f2fb59/4d77fda8-172c6f2fb59.m3u8")
+        editText.setText("https://v8.yongjiu8.com/20180321/V8I5Tg8p/index.m3u8")
         val downloadDialog = AlertDialog.Builder(this)
             .setView(editText)
             .setTitle(R.string.new_download)

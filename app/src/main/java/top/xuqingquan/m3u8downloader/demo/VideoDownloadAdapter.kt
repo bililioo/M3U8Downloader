@@ -1,6 +1,8 @@
 package top.xuqingquan.m3u8downloader.demo
 
 import android.annotation.SuppressLint
+import android.os.Build
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -49,6 +51,7 @@ class VideoDownloadAdapter(private val list: MutableList<VideoDownloadEntity>) :
         private val speed = view.findViewById<TextView>(R.id.speed)
         private val url = view.findViewById<TextView>(R.id.url)
         private val download = view.findViewById<TextView>(R.id.download)
+        private val delete = view.findViewById<TextView>(R.id.delete)
 
         /**
          * 设置数据
@@ -75,6 +78,17 @@ class VideoDownloadAdapter(private val list: MutableList<VideoDownloadEntity>) :
             }
             title.text = name
             updateProgress(data)
+
+            delete.setOnClickListener {
+                data.downloadContext?.stop()
+                data.downloadTask?.cancel()
+
+                val status = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    FileDownloader.deleteDownload(data.originalUrl)
+                } else {
+                    TODO("VERSION.SDK_INT < O")
+                }
+            }
         }
 
         /**

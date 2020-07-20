@@ -2,6 +2,7 @@ package top.xuqingquan.m3u8downloader.entity
 
 import android.os.Parcel
 import android.os.Parcelable
+import android.util.Log
 import com.liulishuo.okdownload.DownloadContext
 import com.liulishuo.okdownload.DownloadTask
 import org.json.JSONObject

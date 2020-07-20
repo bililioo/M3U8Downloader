@@ -4,12 +4,12 @@ apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     buildToolsVersion "28.0.3"
     defaultConfig {
         applicationId "top.xuqingquan.m3u8downloader.demo"
         minSdkVersion 19
-        targetSdkVersion 26
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -36,7 +36,9 @@ dependencies {
     implementation "org.permissionsdispatcher:permissionsdispatcher:4.5.0"
     kapt "org.permissionsdispatcher:permissionsdispatcher-processor:4.5.0"
     implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'com.liulishuo.okdownload:okdownload:1.0.5'
+    implementation 'com.liulishuo.okdownload:okdownload:1.0.7'
     //如果需要断点续传的话需要依赖
     implementation 'com.liulishuo.okdownload:sqlite:1.0.5'
+    //AndroidUtil
+    implementation 'com.blankj:utilcodex:1.28.3'
 }

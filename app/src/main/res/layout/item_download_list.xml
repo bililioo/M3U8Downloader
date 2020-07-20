@@ -68,5 +68,16 @@
         app:layout_constraintTop_toBottomOf="@id/speed"
         tools:text="https://qq.com-ok-qq.com/20191015/24619_fc6ad1d6/index.m3u8" />
 
+    <TextView
+        android:id="@+id/delete"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:text="删除"
+        android:gravity="center"
+        android:textColor="#ffffff"
+        android:background="#ef5050"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@id/url"
+        app:layout_constraintTop_toBottomOf="@id/url"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
